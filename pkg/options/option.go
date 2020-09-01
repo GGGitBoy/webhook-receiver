@@ -3,6 +3,8 @@ package options
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -41,6 +43,22 @@ func Init(configPath string) {
 	})
 
 	go viper.WatchConfig()
+}
+
+func GetTemplate() (string, error) {
+	mut.RLock()
+	defer mut.RUnlock()
+	f, err := os.Open("/etc/webhook-receiver/tmpl/notification.tmpl")
+	if err != nil {
+		fmt.Println("jiandao read file fail")
+	}
+	defer f.Close()
+
+	fd, err := ioutil.ReadAll(f)
+	if err != nil {
+		fmt.Println("jiandao read to fd file fail")
+	}
+	return string(fd), nil
 }
 
 func GetReceiverAndSender(receiverName string) (providers.Receiver, providers.Sender, error) {
